@@ -1,0 +1,11 @@
+import os
+
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+QUERIES_PATH = os.path.join(SCRIPT_DIR, 'queries')
+DB_PATH = '/path/to/your.db'
+
+TIMEZONE = 'Europe/London'
+SENSORS_URI = 'http://127.0.0.1'
+
+ALTITUDE = 116.0  # Metres

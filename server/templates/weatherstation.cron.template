@@ -1,0 +1,1 @@
+* * * * * {{ username }} {{ env_path }}/python {{ repo_path }}/server/jobs/fetch.py

@@ -1,5 +1,8 @@
-import os
 from datetime import datetime
+import os
+import sys
+
+sys.path.append(os.getcwd())
 
 import pugsql
 import pytz

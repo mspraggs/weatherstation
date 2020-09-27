@@ -45,10 +45,19 @@ def get_readings():
         return '', 400
 
     queries = utils.get_db_queries()
-    rows = queries.get_readings(
-        from_timestamp=from_timestamp.isoformat(),
-        to_timestamp=to_timestamp.isoformat(),
-    )
+
+    timespan = to_timestamp - from_timestamp
+    if timespan.days > 0:
+        rows = queries.get_sparse_readings(
+            from_timestamp=from_timestamp.isoformat(),
+            to_timestamp=to_timestamp.isoformat(),
+            nth_mins=10,
+        )
+    else:
+        rows = queries.get_readings(
+            from_timestamp=from_timestamp.isoformat(),
+            to_timestamp=to_timestamp.isoformat(),
+        )
 
     return flask.jsonify([utils.hydrate_reading(r) for r in rows])
 

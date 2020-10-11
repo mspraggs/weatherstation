@@ -1,0 +1,57 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+.cross-hair {
+  background-color: #333;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  width: 10em;
+  text-align: center;
+}
+
+.cross-hair p {
+  margin: 0
+}
+
+.mw-20em {
+  max-width: 20em !important;
+}
+
+.w-30em {
+  width: 30em !important;
+}
+
+nav.nav-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+nav.nav-tabs a {
+  width: 50%;
+  text-align: center;
+}
+
+.DayPicker-Day--selected:not(.DayPicker-Day--disabled):not(.DayPicker-Day--outside) {
+  background-color: #007bff !important;
+}
+
+.rv-crosshair__line {
+  background: #007bff !important;
+}
+
+.container {
+  max-width: 800px !important;
+}

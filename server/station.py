@@ -26,10 +26,10 @@ class ServerLocalDateTime(marshmallow.fields.NaiveDateTime):
 
 class ReadingQuerySchema(marshmallow.Schema):
     from_timestamp = ServerLocalDateTime(
-        format='iso', timezone=pytz.timezone(config.TIMEZONE),
+        format='iso', timezone=pytz.timezone(config.TIMEZONE), required=True,
     )
     to_timestamp = ServerLocalDateTime(
-        format='iso', timezone=pytz.timezone(config.TIMEZONE),
+        format='iso', timezone=pytz.timezone(config.TIMEZONE), required=True,
     )
     interval = marshmallow.fields.Integer(required=False)
 

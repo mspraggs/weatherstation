@@ -4,7 +4,7 @@ import '../node_modules/react-vis/dist/style.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 import { FlexibleWidthXYPlot, LineSeries, XAxis, YAxis, Crosshair } from 'react-vis';
-import { format, subHours } from "date-fns";
+import { differenceInDays, format, subHours } from "date-fns";
 import { Col, Container, Row } from "react-bootstrap";
 
 import TimeSpanPicker from "./TimeSpanPicker.js"
@@ -49,17 +49,41 @@ class App extends Component {
       fromTimestamp: fromTimestamp,
       toTimestamp: toTimestamp,
     });
-    this.fetchTimeSeries(fromTimestamp, toTimestamp);
+    try {
+      this.fetchTimeSeries(fromTimestamp, toTimestamp);
+    } catch (e) {
+      console.log(`Failed to fetch data: ${e}`);
+    }
   }
 
   fetchTimeSeries(from, to) {
     const fromTimestamp = encodeURIComponent(from.toISOString())
     const toTimestamp = encodeURIComponent(to.toISOString())
-    fetch(
+
+    const interval = function () {
+      const elapsedDays = differenceInDays(to, from);
+      if (elapsedDays > 30) {
+        throw new Error("Timespan is greater than thirty days.");
+      }
+      if (elapsedDays > 14) {
+        return 60;
+      }
+      if (elapsedDays > 7) {
+        return 30;
+      }
+      if (elapsedDays > 1) {
+        return 10;
+      }
+    }();
+    const intervalSuffix = interval ? `&interval=${interval}` : "";
+
+    const url =
       `${process.env.REACT_APP_API_URL}/readings` +
       `?from_timestamp=${fromTimestamp}` +
-      `&to_timestamp=${toTimestamp}`
-    ).then(res => res.json())
+      `&to_timestamp=${toTimestamp}` +
+      `${intervalSuffix}`;
+
+    fetch(url).then(res => res.json())
       .then(
         (result) => {
           this.setState({

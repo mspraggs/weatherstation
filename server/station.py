@@ -71,10 +71,10 @@ class ReadingQuerySchema(marshmallow.Schema):
 
 class ReadingSchema(marshmallow.Schema):
     timestamp = marshmallow.fields.DateTime(format='iso')
-    altitude = marshmallow.fields.Float()
-    air_pressure = marshmallow.fields.Float()
-    relative_humidity = marshmallow.fields.Float()
-    temperature = marshmallow.fields.Float()
+    altitude = marshmallow.fields.Float(missing=None)
+    air_pressure = marshmallow.fields.Float(missing=None)
+    relative_humidity = marshmallow.fields.Float(missing=None)
+    temperature = marshmallow.fields.Float(missing=None)
     sea_level_air_pressure = marshmallow.fields.Float(optional=True)
 
 

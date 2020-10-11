@@ -17,7 +17,10 @@ def hydrate_reading(raw_reading):
         - GRAV_ACCEL * altitude * DRY_AIR_MOLAR_MASS
         / (SEA_LEVEL_STD_TEMP * UNIV_GAS_CONST)
     )
-    sea_level_air_pressure = round(raw_reading['air_pressure'] / pressure_ratio, 2)
+    air_pressure = raw_reading.get('air_pressure')
+    sea_level_air_pressure = None
+    if air_pressure:
+        sea_level_air_pressure = round(air_pressure / pressure_ratio, 2)
 
     hydrated_reading = raw_reading.copy()
     hydrated_reading['sea_level_air_pressure'] = sea_level_air_pressure

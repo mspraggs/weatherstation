@@ -1,6 +1,7 @@
 flask==1.1.2
 gunicorn==20.0.4
 ipython==7.18.1
+marshmallow==3.8.0
 pugsql==0.2.3
 pytz==2.24.0
 pytz==2020.1

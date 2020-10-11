@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-daterangepicker/daterangepicker.css';
 import 'react-day-picker/lib/style.css';
 
 import { format, parse, sub } from "date-fns";

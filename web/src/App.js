@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './App.css';
 import '../node_modules/react-vis/dist/style.css';
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-daterangepicker/daterangepicker.css';
 
 import { FlexibleWidthXYPlot, LineSeries, XAxis, YAxis, Crosshair } from 'react-vis';
 import { format, subHours } from "date-fns";

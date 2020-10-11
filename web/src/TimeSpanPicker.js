@@ -134,8 +134,8 @@ class TimePicker extends Component {
     const { autoUpdate, timespan } = this.state;
     const { timestamp } = this.props;
     return (
-      <Popover className="mw-100 w-30em" transition={false}>
-        <Popover.Content className="w-30em">
+      <Popover className="mw-100 w-25rem" transition={false}>
+        <Popover.Content className="w-25rem">
           <Tabs
             defaultActiveKey="relative"
             transition={false}
@@ -170,7 +170,7 @@ class TimePicker extends Component {
           overlay={this.renderPicker()}
         >
           <Form.Control
-            className="text-center mw-20em"
+            className="text-center mw-20rem"
             type="text"
             readonly
             value={format(timestamp, this.props.format)}

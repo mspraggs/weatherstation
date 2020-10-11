@@ -20,16 +20,20 @@
   text-align: center;
 }
 
+p {
+  font-size: 1rem;
+}
+
 .cross-hair p {
   margin: 0
 }
 
-.mw-20em {
-  max-width: 20em !important;
+.mw-20rem {
+  max-width: 20rem !important;
 }
 
-.w-30em {
-  width: 30em !important;
+.w-25rem {
+  width: 25rem !important;
 }
 
 nav.nav-tabs {

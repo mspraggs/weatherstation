@@ -4,7 +4,7 @@ import '../node_modules/react-vis/dist/style.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 import { FlexibleWidthXYPlot, LineSeries, XAxis, YAxis, Crosshair } from 'react-vis';
-import { differenceInDays, format, subHours } from "date-fns";
+import { differenceInSeconds, format, subHours } from "date-fns";
 import { Col, Container, Nav, Row } from "react-bootstrap";
 
 import TimeSpanPicker from "./TimeSpanPicker.js"
@@ -57,23 +57,25 @@ class App extends Component {
   }
 
   fetchTimeSeries(from, to) {
-    const fromTimestamp = encodeURIComponent(from.toISOString())
-    const toTimestamp = encodeURIComponent(to.toISOString())
+    const fromTimestamp = encodeURIComponent(from.toISOString());
+    const toTimestamp = encodeURIComponent(to.toISOString());
 
     const interval = function () {
-      const elapsedDays = differenceInDays(to, from);
-      if (elapsedDays > 30) {
+      const secondsInDay = 3600 * 24;
+      const elapsedSeconds = differenceInSeconds(to, from);
+      if (elapsedSeconds > 30 * secondsInDay) {
         throw new Error("Timespan is greater than thirty days.");
       }
-      if (elapsedDays > 14) {
+      if (elapsedSeconds > 14 * secondsInDay) {
         return 60;
       }
-      if (elapsedDays > 7) {
+      if (elapsedSeconds > 7 * secondsInDay) {
         return 30;
       }
-      if (elapsedDays > 1) {
+      if (elapsedSeconds > 1 * secondsInDay) {
         return 10;
       }
+      return null;
     }();
     const intervalSuffix = interval ? `&interval=${interval}` : "";
 

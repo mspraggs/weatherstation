@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import { FlexibleWidthXYPlot, LineSeries, XAxis, YAxis, Crosshair } from 'react-vis';
 import { differenceInDays, format, subHours } from "date-fns";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Nav, Row } from "react-bootstrap";
 
 import TimeSpanPicker from "./TimeSpanPicker.js"
 
@@ -148,6 +148,12 @@ class App extends Component {
     const formattedLatestTimestmap =
       timestampLatest ? format(timestampLatest, fmt) : "-- --- ---- @ --:--:--";
 
+    const formattedLatestData =
+      `${pressureLatestValue || "----.--"} hPa / ` +
+      `${temperatureLatestValue || "--.-"} °C / ` +
+      `${humidityLatestValue || "--.-"}% on ` +
+      formattedLatestTimestmap;
+
     let getFormattedX = (v) => {
       if (v && v.x) {
         return format(v.x, fmt);
@@ -155,32 +161,21 @@ class App extends Component {
       return "";
     }
     return (
-      <div className="App-header">
+      <>
+        <Nav className="bg-primary text-light mb-4 pt-2 pb-2">
+          <Container fluid="md">
+            <Row className="align-items-center">
+              <Col>
+                <h2 className="mb-0">Týr</h2>
+              </Col>
+              <Col className="text-right">
+                <h5 className="mb-0">Atmospheric readings for St Albans, UK</h5>
+                <h6 className="mb-1 mt-2">Latest: {formattedLatestData}</h6>
+              </Col>
+            </Row>
+          </Container>
+        </Nav>
         <Container fluid="md">
-          <Row>
-            <Col className="text-center">
-              <h1>Týr</h1>
-            </Col>
-          </Row>
-          <Row>
-            <Col className="text-center">
-              <h4>Atmospheric readings for St Albans, UK</h4>
-            </Col>
-          </Row>
-          <Row>
-            <Col md="auto">
-              <p>Latest reading (on {formattedLatestTimestmap}):</p>
-            </Col>
-            <Col className="text-center">
-              <p>{`${pressureLatestValue || "----.--"} hPa`}</p>
-            </Col>
-            <Col className="text-center">
-              <p>{`${temperatureLatestValue || "--.-"} °C`}</p>
-            </Col>
-            <Col className="text-center">
-              <p>{`${humidityLatestValue || "--.-"} %`}</p>
-            </Col>
-          </Row>
           <Row>
             <Col className="text-center">
               <h5>Graph time range</h5>
@@ -266,7 +261,7 @@ class App extends Component {
             </Col>
           </Row>
         </Container>
-      </div >
+      </>
     );
   }
 }

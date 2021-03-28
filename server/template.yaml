@@ -30,6 +30,15 @@ Parameters:
     Description: Stage name for API Gateway. Default is Stage.
 
 Resources:
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: common-code
+      Description: Common code
+      ContentUri: common/
+      CompatibleRuntimes:
+        - python3.8
+      RetentionPolicy: Retain
   GetLatestReadingFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -49,6 +58,8 @@ Resources:
             ApiId: !Ref ReadingsApi
             Path: /readings/latest
             Method: GET
+      Layers:
+        - !Ref CommonLayer
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref WeatherDataTable
@@ -71,6 +82,8 @@ Resources:
             ApiId: !Ref ReadingsApi
             Path: /readings
             Method: GET
+      Layers:
+        - !Ref CommonLayer
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref WeatherDataTable

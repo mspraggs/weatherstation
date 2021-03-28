@@ -6,8 +6,6 @@ import sys
 
 sys.path.append(os.getcwd())
 
-import pugsql
-import pytz
 import requests
 
 import boto3
@@ -17,34 +15,7 @@ import config
 import utils
 
 
-def create_item(data):
-    timestamp = data['timestamp'].astimezone(dateutil.tz.UTC)
-    item = {
-        'date': {'S': str(timestamp.date())},
-        'timestamp': {'N': str(timestamp.timestamp())},
-        'hour': {'N': str(timestamp.hour)},
-        'minute': {'N': str(timestamp.minute)},
-    }
-
-    numeric_fields = list(data.keys())
-    numeric_fields.remove('timestamp')
-
-    for field in numeric_fields:
-        value = data[field]
-        entry = (
-            {'N': str(value)}
-            if value is not None
-            and not math.isinf(value)
-            and not math.isnan(value)
-            else {'NULL': True}
-        )
-        item[field] = entry
-
-    return item
-
-
 if __name__ == '__main__':
-    queries = utils.get_db_queries()
     timestamp = datetime.now(dateutil.tz.gettz(config.TIMEZONE))
 
     response = requests.get(config.SENSORS_URI)
@@ -53,15 +24,17 @@ if __name__ == '__main__':
         float(s.strip()) for s in response.text.split(',')
     )
 
-    queries.create_reading(
-        timestamp=timestamp.isoformat(),
-        temperature=temperature,
-        relative_humidity=relative_humidity,
-        air_pressure=air_pressure,
-        altitude=config.ALTITUDE,
-    )
+    with open(config.CSV_PATH, 'a') as f:
+        line = ','.join([
+            str(timestamp.timestamp()),
+            str(temperature),
+            str(relative_humidity),
+            str(air_pressure),
+            str(config.ALTITUDE),
+        ])
+        f.write(f'{line}\n')
 
-    item = create_item(
+    item = utils.create_item(
         {
             'timestamp': timestamp,
             'temperature': temperature,

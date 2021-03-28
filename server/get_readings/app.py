@@ -8,38 +8,20 @@ import boto3
 from boto3.dynamodb.conditions import And, Attr, Key
 from botocore.config import Config
 
+import utils
+
 
 ALLOWED_INTERVAL_CONSTRAINTS = [
     (1, 10),
     (7, 30),
     (14, 60),
 ]
-SEA_LEVEL_STD_TEMP = 288.16  # Kelvin
-GRAV_ACCEL = 9.80665  # m / s**2
-DRY_AIR_MOLAR_MASS = 0.02896968  # kg / mol
-UNIV_GAS_CONST = 8.314462618  # J / (mol.K)
 
 
 class ValidationError(Exception):
     """
     Raised when validating event parameters.
     """
-
-
-def translate_item(item):
-    """
-    Translates a reading into a format suitable for JSON serialisation.
-    """
-    timestamp = datetime.datetime.fromtimestamp(
-        float(item['timestamp']), dateutil.tz.UTC,
-    )
-    return {
-        'timestamp': timestamp.isoformat(),
-        'altitude': float(item['altitude']),
-        'temperature': float(item['temperature']),
-        'relative_humidity': float(item['relative_humidity']),
-        'air_pressure': float(item['air_pressure']),
-    }
 
 
 def hydrate_reading(raw_reading):
@@ -182,7 +164,7 @@ def get_data(from_timestamp, to_timestamp, interval):
             ),
             FilterExpression=Attr('minute').is_in(minutes),
         )
-        data.extend([translate_item(i) for i in response['Items']])
+        data.extend([utils.translate_item(i) for i in response['Items']])
         current_date += inc
 
     return data
@@ -210,5 +192,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps([hydrate_reading(r) for r in data]),
+        'body': json.dumps([utils.hydrate_reading(r) for r in data]),
     }

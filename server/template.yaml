@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  weatherstation
+
+Globals:
+  Function:
+    Timeout: 3
+
+Mappings:
+  EnvironmentVariables:
+    Development:
+      Production: false
+      ApiUrl: dev
+    Production:
+      Production: true
+      ApiUrl: prod
+
+Parameters:
+  DeploymentStage:
+    Type: String
+    Default: Development
+    AllowedValues:
+      - Development
+      - Production
+    Description: Development or Production deployment. Default is Dev.
+  ApiStageName:
+    Type: String
+    Default: dev
+    Description: Stage name for API Gateway. Default is Stage.
+
+Resources:
+  GetLatestReadingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_latest_reading/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref WeatherDataTable
+          STAGE: !Ref DeploymentStage
+          Production: !FindInMap [EnvironmentVariables, !Ref DeploymentStage, Production]
+          ApiUrl: !FindInMap [EnvironmentVariables, !Ref DeploymentStage, ApiUrl]
+      Events:
+        GetLatestReading:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ReadingsApi
+            Path: /readings/latest
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref WeatherDataTable
+  GetReadingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_readings/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref WeatherDataTable
+          STAGE: !Ref DeploymentStage
+          Production: !FindInMap [EnvironmentVariables, !Ref DeploymentStage, Production]
+          ApiUrl: !FindInMap [EnvironmentVariables, !Ref DeploymentStage, ApiUrl]
+      Events:
+        GetReadings:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ReadingsApi
+            Path: /readings
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref WeatherDataTable
+  ReadingsApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+          AllowMethods:
+            - GET
+          AllowOrigins:
+            - "*"
+      StageName: !Ref ApiStageName # use our parameter
+  WeatherDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+
+Outputs:
+  GetReadingsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ReadingsApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+  GetReadingsFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt GetReadingsFunction.Arn
+  GetReadingsFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt GetReadingsFunctionRole.Arn

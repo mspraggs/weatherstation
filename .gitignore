@@ -257,3 +257,6 @@ server/config.py
 *.db
 
 /.vscode
+
+/server/.aws-sam
+*/build/*

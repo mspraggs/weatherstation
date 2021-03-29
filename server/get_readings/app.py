@@ -57,31 +57,29 @@ def validate_query_parameters(parameters):
     """
     Validate the provided query parameters.
     """
-    elapsed_days = (
-        parameters['to_timestamp'] - parameters['from_timestamp']
-    ).days
-    interval = parameters.get('interval')
+    from_timestamp = parameters['from_timestamp']
+    to_timestamp = parameters['to_timestamp']
+    interval = parameters.get('interval', 1)
 
-    if interval and interval < 1:
+    if interval < 1:
         raise ValidationError(
             'Interval must be greater than zero.'
         )
-    if elapsed_days <= 1:
-        return
 
     if not interval:
         raise ValidationError(
             'Missing \'interval\' parameter for timespan greater than one day.',
         )
 
-    for ed_limit, i_limit in ALLOWED_INTERVAL_CONSTRAINTS:
-        if elapsed_days > ed_limit and interval < i_limit:
-            raise ValidationError(
-                f'Timespans greater than {ed_limit} days must have '
-                f'\'interval\' parameter of at least {i_limit}'
-            )
+    min_interval = utils.compute_min_interval(from_timestamp, to_timestamp)
 
-    if elapsed_days > 30:
+    if interval < min_interval:
+        raise ValidationError(
+            f'Specified timespan requires \'interval\' parameter of at least '
+            f'{min_interval}.'
+        )
+
+    if (to_timestamp - from_timestamp).days > 30:
         raise ValidationError(
             'Timespans greater than 30 days are forbidden.'
         )

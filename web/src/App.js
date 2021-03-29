@@ -61,21 +61,14 @@ class App extends Component {
     const toTimestamp = encodeURIComponent(to.toISOString());
 
     const interval = function () {
-      const secondsInDay = 3600 * 24;
       const elapsedSeconds = differenceInSeconds(to, from);
-      if (elapsedSeconds > 30 * secondsInDay) {
-        throw new Error("Timespan is greater than thirty days.");
+      const intervalSeconds = elapsedSeconds / 720;
+      var intervalMinutes = Math.ceil(intervalSeconds / 60);
+      while (60 % intervalMinutes > 0) {
+        console.log(`intervalMinutes = ${intervalMinutes}`);
+        intervalMinutes += 1;
       }
-      if (elapsedSeconds > 14 * secondsInDay) {
-        return 60;
-      }
-      if (elapsedSeconds > 7 * secondsInDay) {
-        return 30;
-      }
-      if (elapsedSeconds > 1 * secondsInDay) {
-        return 10;
-      }
-      return null;
+      return intervalMinutes;
     }();
     const intervalSuffix = interval ? `&interval=${interval}` : "";
 

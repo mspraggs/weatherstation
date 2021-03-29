@@ -3,6 +3,7 @@ import dateutil
 import json
 import math
 import os
+import time
 
 import boto3
 from boto3.dynamodb.conditions import And, Attr, Key
@@ -22,25 +23,6 @@ class ValidationError(Exception):
     """
     Raised when validating event parameters.
     """
-
-
-def hydrate_reading(raw_reading):
-    """
-    """
-    altitude = raw_reading['altitude']
-    pressure_ratio = math.exp(
-        - GRAV_ACCEL * altitude * DRY_AIR_MOLAR_MASS
-        / (SEA_LEVEL_STD_TEMP * UNIV_GAS_CONST)
-    )
-    air_pressure = raw_reading.get('air_pressure')
-    sea_level_air_pressure = None
-    if air_pressure:
-        sea_level_air_pressure = round(air_pressure / pressure_ratio, 2)
-
-    hydrated_reading = raw_reading.copy()
-    hydrated_reading['sea_level_air_pressure'] = sea_level_air_pressure
-
-    return hydrated_reading
 
 
 def parse_timestamp(timestamp):
@@ -139,6 +121,7 @@ def get_data(from_timestamp, to_timestamp, interval):
     """
     Fetch weather data readings between the specified timestamps
     """
+    start_time = time.time()
     resource = boto3.resource(
         'dynamodb',
         config=Config(region_name='eu-west-2'),
@@ -166,6 +149,10 @@ def get_data(from_timestamp, to_timestamp, interval):
         )
         data.extend([utils.translate_item(i) for i in response['Items']])
         current_date += inc
+
+    finish_time = time.time()
+    elapsed_time = finish_time - start_time
+    print(f'Time spent fetching data from DynamoDB: {elapsed_time} seconds')
 
     return data
 

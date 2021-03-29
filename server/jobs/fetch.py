@@ -15,6 +15,9 @@ import config
 import utils
 
 
+TABLE_NAME = 'weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN'
+
+
 if __name__ == '__main__':
     timestamp = datetime.now(dateutil.tz.gettz(config.TIMEZONE))
 
@@ -50,8 +53,9 @@ if __name__ == '__main__':
         'dynamodb',
         config=Config(region_name='eu-west-2'),
     )
-    client.put_item(
-        TableName='weatherstation-prod-WeatherDataTable-1D0BRV6F7DK5C',
-        Item=item,
-    )
-
+    client.put_item(TableName=TABLE_NAME, Item=item)
+    item['latest_timestamp'] = item['timestamp'].copy()
+    item['timestamp']['N'] = '0.0'
+    item['latest_date'] = item['date'].copy()
+    item['date']['S'] = '0000-00-00'
+    client.put_item(TableName=TABLE_NAME, Item=item)

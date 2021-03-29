@@ -23,24 +23,15 @@ def get_latest_reading():
     )
     table = resource.Table(os.environ.get('TABLE_NAME'))
 
-    inc = datetime.timedelta(days=-1)
+    item = table.get_item(
+        Key={'date': '0000-00-00', 'timestamp': 0},
+    ).get('Item')
 
-    current_date = datetime.date.today()
-    stop_date = current_date - datetime.timedelta(days=30)
-    reading = None
+    if item is not None:
+        item['date'] = item.pop('latest_date')
+        item['timestamp'] = item.pop('latest_timestamp')
 
-    while current_date >= stop_date:
-        response = table.query(
-            KeyConditionExpression=Key('date').eq(str(current_date)),
-        )
-        items = response['Items']
-        if len(items) > 0:
-            reading = utils.translate_item(
-                max(items, key=lambda i: i['timestamp'])
-            )
-            break
-
-        current_date += inc
+    reading = item and utils.translate_item(item)
 
     finish_time = time.time()
     elapsed_time = finish_time - start_time

@@ -60,6 +60,7 @@ Resources:
             Method: GET
       Layers:
         - !Ref CommonLayer
+      MemorySize: 512
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref WeatherDataTable
@@ -84,6 +85,7 @@ Resources:
             Method: GET
       Layers:
         - !Ref CommonLayer
+      MemorySize: 512
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref WeatherDataTable

@@ -20,8 +20,9 @@ if __name__ == '__main__':
 
     response = requests.get(config.SENSORS_URI)
     response.raise_for_status()
+    raw_data = response.text.split(',')
     temperature, relative_humidity, air_pressure = tuple(
-        float(s.strip()) for s in response.text.split(',')
+        float(s.strip()) for s in raw_data if s
     )
 
     with open(config.CSV_PATH, 'a') as f:

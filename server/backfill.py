@@ -18,8 +18,8 @@ import utils
 COLUMN_HEADINGS = (
     'timestamp',
     'temperature',
-    'air_pressure',
     'relative_humidity',
+    'air_pressure',
     'altitude',
 )
 
@@ -28,7 +28,13 @@ def parse_line_to_reading(line):
     """
     Parse line to reading.
     """
-    reading = dict(zip(COLUMN_HEADINGS, map(float, line.split(','))))
+    raw_data = line.split(',')
+    reading = {}
+    for l, d in zip(COLUMN_HEADINGS, raw_data):
+        try:
+            reading[l] = float(d)
+        except ValueError:
+            reading[l] = None
     reading['timestamp'] = datetime.fromtimestamp(reading['timestamp'])
     return reading
 

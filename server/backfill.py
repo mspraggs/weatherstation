@@ -1,6 +1,8 @@
 from datetime import datetime
+import dateutil
 import os
 import sys
+import time
 
 sys.path.append(os.getcwd())
 
@@ -22,6 +24,10 @@ COLUMN_HEADINGS = (
     'air_pressure',
     'altitude',
 )
+TABLE_NAME = 'weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN'
+# TABLE_NAME = 'weatherstation-prod-WeatherDataTable-1D0BRV6F7DK5C'
+FROM_TIMESTAMP = None
+TO_TIMESTAMP = None
 
 
 def parse_line_to_reading(line):
@@ -52,8 +58,13 @@ if __name__ == '__main__':
         lines = f.readlines()
 
     readings = [parse_line_to_reading(l) for l in lines]
+    readings = [
+        r for r in readings
+        if r['timestamp'].timestamp() >= (FROM_TIMESTAMP or 0.0)
+        and r['timestamp'].timestamp() < (TO_TIMESTAMP or time.time())
+    ]
 
     for reading in readings:
+        print(f'Backfilling reading @ {reading["timestamp"].isoformat()}')
         item = utils.create_item(reading)
-        client.put_item(TableName='weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN', Item=item)
-        #client.put_item(TableName='weatherstation-prod-WeatherDataTable-1D0BRV6F7DK5C', Item=item)
+        client.put_item(TableName=TABLE_NAME, Item=item)

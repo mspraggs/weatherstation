@@ -127,6 +127,9 @@ def get_data(from_timestamp, to_timestamp, interval):
     table = resource.Table(os.environ.get('TABLE_NAME'))
 
     minutes = [i for i in range(60) if i % interval == 0]
+    query_params = {}
+    if interval != 1:
+        query_params['FilterExpression'] = Attr('minute').is_in(minutes)
     inc = datetime.timedelta(days=1)
 
     data = []
@@ -143,7 +146,7 @@ def get_data(from_timestamp, to_timestamp, interval):
                     int(to_timestamp.timestamp()),
                 ),
             ),
-            FilterExpression=Attr('minute').is_in(minutes),
+            **query_params,
         )
         data.extend([utils.translate_item(i) for i in response['Items']])
         current_date += inc

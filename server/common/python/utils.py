@@ -36,6 +36,8 @@ def compute_min_interval(from_timestamp, to_timestamp):
     delta = to_timestamp - from_timestamp
     required_interval = delta / MAX_RESPONSE_READINGS
     required_interval_minutes = math.ceil(required_interval.seconds / 60)
+    if required_interval_minutes == 0:
+        return 1
     while 60 % required_interval_minutes > 0:
         required_interval_minutes += 1
 

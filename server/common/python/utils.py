@@ -57,7 +57,7 @@ def translate_item(item):
 
 
 def create_item(data):
-    timestamp = data['timestamp'].astimezone(dateutil.tz.UTC)
+    timestamp = data['timestamp']
     item = {
         'date': {'S': str(timestamp.date())},
         'timestamp': {'N': str(timestamp.timestamp())},

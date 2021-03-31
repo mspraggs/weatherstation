@@ -35,7 +35,9 @@ def parse_line_to_reading(line):
             reading[l] = float(d)
         except ValueError:
             reading[l] = None
-    reading['timestamp'] = datetime.fromtimestamp(reading['timestamp'])
+    reading['timestamp'] = datetime.fromtimestamp(
+        reading['timestamp'], dateutil.tz.UTC,
+    )
     return reading
 
 

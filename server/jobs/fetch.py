@@ -19,7 +19,7 @@ TABLE_NAME = 'weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN'
 
 
 if __name__ == '__main__':
-    timestamp = datetime.now(dateutil.tz.gettz(config.TIMEZONE))
+    timestamp = datetime.now(dateutil.tz.UTC)
 
     response = requests.get(config.SENSORS_URI)
     response.raise_for_status()

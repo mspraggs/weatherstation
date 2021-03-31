@@ -31,6 +31,8 @@ def compute_min_interval(from_timestamp, to_timestamp):
     """
     Computes the minimum required number of minutes between readings.
     """
+    if from_timestamp >= to_timestamp:
+        return 1
     delta = to_timestamp - from_timestamp
     required_interval = delta / MAX_RESPONSE_READINGS
     required_interval_minutes = math.ceil(required_interval.seconds / 60)

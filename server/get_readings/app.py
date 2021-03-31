@@ -12,13 +12,6 @@ from botocore.config import Config
 import utils
 
 
-ALLOWED_INTERVAL_CONSTRAINTS = [
-    (1, 10),
-    (7, 30),
-    (14, 60),
-]
-
-
 class ValidationError(Exception):
     """
     Raised when validating event parameters.
@@ -60,6 +53,12 @@ def validate_query_parameters(parameters):
     from_timestamp = parameters['from_timestamp']
     to_timestamp = parameters['to_timestamp']
     interval = parameters.get('interval', 1)
+
+    if to_timestamp < from_timestamp:
+        raise ValidationError(
+            'Expected \'to_timestamp\' to be equal to or greater than '
+            '\'from_timestamp\'.'
+        )
 
     if interval < 1:
         raise ValidationError(
@@ -135,9 +134,9 @@ def get_data(from_timestamp, to_timestamp, interval):
     data = []
 
     current_date = from_timestamp.date()
-    stop = to_timestamp.date() + inc
+    stop = to_timestamp.date()
 
-    while current_date < stop:
+    while current_date <= stop:
         response = table.query(
             KeyConditionExpression=And(
                 Key('date').eq(str(current_date)),

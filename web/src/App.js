@@ -65,7 +65,6 @@ class App extends Component {
       const intervalSeconds = elapsedSeconds / 720;
       var intervalMinutes = Math.ceil(intervalSeconds / 60);
       while (60 % intervalMinutes > 0) {
-        console.log(`intervalMinutes = ${intervalMinutes}`);
         intervalMinutes += 1;
       }
       return intervalMinutes;

@@ -82,16 +82,6 @@ class TimeSpanPicker extends Component {
     this.update();
   }
 
-  setFromTimestamp(fromTimestamp) {
-    const { toTimestamp } = this.state;
-    this.setTimestamps(fromTimestamp, toTimestamp);
-  }
-
-  setToTimestamp(toTimestamp) {
-    const { fromTimestamp } = this.state;
-    this.setTimestamps(fromTimestamp, toTimestamp);
-  }
-
   render() {
     const { fromTimestamp, toTimestamp } = this.state;
     return (
@@ -121,7 +111,7 @@ class TimePicker extends Component {
   constructor(props) {
     super(props);
     const hours = differenceInHours(new Date(), props.timestamp);
-    const timespan = {hours: hours};
+    const timespan = { hours: hours };
     this.state = {
       timespan: timespan,
       autoUpdate: false,
@@ -284,33 +274,28 @@ class RelativePicker extends Component {
 class AbsolutePicker extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      date: new Date(props.timestamp),
-      time: format(props.timestamp, "HH:mm"),
-    }
+    this.onApply = this.props.onApply;
+    this.onChange = this.props.onChange;
   }
 
   handleDayClick(day) {
-    console.log("handleDayClick");
-    console.log(day);
     const hours = this.props.timestamp.getHours();
     const minutes = this.props.timestamp.getMinutes();
+    const timestamp = set(day, { "hours": hours, "minutes": minutes });
     this.props.onChange({
-      timestamp: set(day, {"hours": hours, "minutes": minutes}),
+      timestamp: timestamp,
     });
   }
 
   setTime(e) {
-    console.log("setTime");
     const timestamp = parse(e.target.value, "HH:mm", this.props.timestamp);
-    console.log(timestamp);
-    this.props.onChange({
-      timestamp: parse(e.target.value, "HH:mm", this.props.timestamp),
+    this.onChange({
+      timestamp: timestamp,
     });
   }
 
   apply() {
-    this.props.onApply(this.props.timestamp);
+    this.onApply(this.props.timestamp);
   }
 
   render() {

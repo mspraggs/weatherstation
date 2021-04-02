@@ -81,17 +81,21 @@ class App extends Component {
     fetch(url).then(res => res.json())
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            items: result,
-          });
+          if (result.message) {
+            console.log(`ERROR: ${result.message}`);
+          } else {
+            this.setState({
+              isLoaded: true,
+              items: result,
+            });
+          }
         },
         (error) => {
+          console.log(error);
           this.setState({
             isLoaded: true,
             error,
           });
-          console.log(error);
         },
       );
   }

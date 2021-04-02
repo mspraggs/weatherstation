@@ -3,7 +3,16 @@ import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'react-day-picker/lib/style.css';
 
-import { format, parse, sub } from "date-fns";
+import {
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+  differenceInWeeks,
+  format,
+  parse,
+  set,
+  sub
+} from "date-fns";
 import DayPicker from 'react-day-picker';
 import {
   Button,
@@ -26,26 +35,51 @@ class TimeSpanPicker extends Component {
     this.state = {
       fromTimestamp: props.fromTimestamp,
       toTimestamp: props.toTimestamp,
-      showFromPicker: false,
-      showToPicker: false,
     };
     this.locale = {
       "format": props.format,
     };
     this.onApply = props.onApply;
+    this.fromTimestampGenerator = () => props.fromTimestamp;
+    this.toTimestampGenerator = () => props.toTimestamp;
   }
 
   componentDidMount() {
     const { fromTimestamp, toTimestamp } = this.state;
     this.onApply(fromTimestamp, toTimestamp);
+    this.updateTimer = setInterval(() => this.update(), 30000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.updateTimer);
   }
 
   setTimestamps(fromTimestamp, toTimestamp) {
+    if (fromTimestamp === this.state.fromTimestamp &&
+      toTimestamp === this.state.toTimestamp) {
+      return;
+    }
     this.setState({
       fromTimestamp: fromTimestamp,
       toTimestamp: toTimestamp,
     });
     this.onApply(fromTimestamp, toTimestamp);
+  }
+
+  update() {
+    const fromTimestamp = this.fromTimestampGenerator();
+    const toTimestamp = this.toTimestampGenerator();
+    this.setTimestamps(fromTimestamp, toTimestamp);
+  }
+
+  setFromTimestampGenerator(fromTimestampGenerator) {
+    this.fromTimestampGenerator = fromTimestampGenerator;
+    this.update();
+  }
+
+  setToTimestampGenerator(toTimestampGenerator) {
+    this.toTimestampGenerator = toTimestampGenerator;
+    this.update();
   }
 
   setFromTimestamp(fromTimestamp) {
@@ -59,24 +93,22 @@ class TimeSpanPicker extends Component {
   }
 
   render() {
-    const { fromTimestamp, toTimestamp, showFromPicker, showToPicker } = this.state;
+    const { fromTimestamp, toTimestamp } = this.state;
     return (
       <Container>
         <Row className="justify-content-md-center">
           <Col className="p-0" md="auto">
             <TimePicker
-              timestamp={ fromTimestamp }
-              showPicker={ showFromPicker }
-              format={ this.locale["format"] }
-              onApply={ (t) => this.setFromTimestamp(t) }
+              timestamp={fromTimestamp}
+              format={this.locale["format"]}
+              onApply={(g) => this.setFromTimestampGenerator(g)}
             />
           </Col>
           <Col className="p-0" md="auto">
             <TimePicker
-              timestamp={ toTimestamp }
-              showPicker={ showToPicker }
-              format={ this.locale["format"] }
-              onApply={ (t) => this.setToTimestamp(t) }
+              timestamp={toTimestamp}
+              format={this.locale["format"]}
+              onApply={(g) => this.setToTimestampGenerator(g)}
             />
           </Col>
         </Row>
@@ -88,70 +120,56 @@ class TimeSpanPicker extends Component {
 class TimePicker extends Component {
   constructor(props) {
     super(props);
+    const hours = differenceInHours(new Date(), props.timestamp);
+    const timespan = {hours: hours};
     this.state = {
-      timespan: null,
-      autoUpdate: false,
-    };
-    this.onApply = props.onApply;
-  }
-
-  componentDidMount() {
-    this.updateTimer = setInterval(() => this.update(), 10000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.updateTimer);
-  }
-
-  setTimespan(timespan, autoUpdate) {
-    this.setState({
       timespan: timespan,
-      autoUpdate: autoUpdate,
-    });
-    if (!timespan) {
-      return;
-    }
-    const timestamp = sub(new Date(), timespan);
-    this.onApply(timestamp);
-  }
-
-  setTimestamp(timestamp) {
-    this.setState({
       autoUpdate: false,
-    });
-    this.onApply(timestamp);
+      timestamp: props.timestamp,
+    };
+    this.onApplyProp = props.onApply;
   }
 
-  update() {
-    const { autoUpdate, timespan } = this.state;
-    if (!autoUpdate || !timespan) {
-      return;
-    }
-    this.onApply(sub(new Date(), timespan));
+  onApply(gen, extra) {
+    const generator = () => {
+      const timestamp = gen();
+      const { units } = unpackDuration(this.state.timespan);
+      const timespan = differenceInUnits(new Date(), timestamp, units);
+      var autoUpdate = extra.autoUpdate;
+      if (autoUpdate === null) {
+        autoUpdate = this.state.autoUpdate;
+      }
+      this.setState({
+        timestamp: timestamp,
+        timespan: extra.timespan || timespan,
+        autoUpdate: autoUpdate,
+      });
+      return timestamp;
+    };
+    this.onApplyProp(generator);
   }
 
   renderPicker() {
-    const { autoUpdate, timespan } = this.state;
-    const { timestamp } = this.props;
+    const { autoUpdate, timespan, timestamp } = this.state;
     return (
       <Popover className="mw-100 w-25rem" transition={false}>
         <Popover.Content className="w-25rem">
-          <Tabs
-            defaultActiveKey="relative"
-            transition={false}
-          >
+          <Tabs defaultActiveKey="relative">
             <Tab eventKey="relative" title="Relative">
               <RelativePicker
-                autoUpdate={ autoUpdate }
-                timespan={ timespan }
-                onApply={ (t, u) => this.setTimespan(t, u) }
+                autoUpdate={autoUpdate}
+                timespan={timespan}
+                timestamp={timestamp}
+                onChange={(s) => this.setState(s)}
+                onApply={(g, extra) => this.onApply(g, extra)}
               />
             </Tab>
             <Tab eventKey="absolute" title="Absolute">
-            <AbsolutePicker
-              timestamp={ timestamp }
-              onApply={ (t) => this.setTimestamp(t) }
-            />
+              <AbsolutePicker
+                timestamp={timestamp}
+                onChange={(s) => this.setState(s)}
+                onApply={(t) => this.onApply(() => t, {})}
+              />
             </Tab>
           </Tabs>
         </Popover.Content>
@@ -184,20 +202,31 @@ class TimePicker extends Component {
 class RelativePicker extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      timespan: props.timespan,
-      autoUpdate: props.autoUpdate,
-    }
+    this.onChange = props.onChange;
     this.onApply = props.onApply;
   }
 
   apply() {
-    const { timespan, autoUpdate } = this.state;
-    this.onApply(timespan, autoUpdate);
+    const { autoUpdate, timespan } = this.props;
+    const initialTimestamp = sub(new Date(), timespan);
+    const extra = {
+      timespan: timespan,
+      autoUpdate: autoUpdate,
+    };
+    const timestampGenerator = () => {
+      if (!autoUpdate) {
+        return initialTimestamp;
+      }
+      if (!timespan) {
+        return;
+      }
+      return sub(new Date(), timespan);
+    };
+    this.onApply(timestampGenerator, extra);
   }
 
   render() {
-    const { timespan, autoUpdate } = this.state;
+    const { autoUpdate, timespan } = this.props;
     const { value, units } = unpackDuration(timespan);
     return (
       <Form>
@@ -208,10 +237,10 @@ class RelativePicker extends Component {
               id="timespan-value"
               className="w-100 h-100 text-center"
               type="number"
-              onChange={(e) => this.setState({
+              onChange={(e) => this.onChange({
                 timespan: makeNewDurationWithValue(timespan, e.target.value),
               })}
-              value={value || ""}
+              value={value}
             />
           </Form.Group>
           <Form.Group as={Col}>
@@ -219,15 +248,15 @@ class RelativePicker extends Component {
               custom
               id="timespan-units"
               as="select"
-              onChange={(e) => this.setState({
+              onChange={(e) => this.onChange({
                 timespan: makeNewDurationWithUnits(timespan, e.target.value)
               })}
-              value={units || "minutes"}
+              value={units}
             >
-            <option value="minutes">Minutes ago</option>
-            <option value="hours">Hours ago</option>
-            <option value="days">Days ago</option>
-            <option value="weeks">Weeks ago</option>
+              <option value="minutes">Minutes ago</option>
+              <option value="hours">Hours ago</option>
+              <option value="days">Days ago</option>
+              <option value="weeks">Weeks ago</option>
             </Form.Control>
           </Form.Group>
         </Form.Row>
@@ -239,7 +268,7 @@ class RelativePicker extends Component {
                 value={1}
                 type="checkbox"
                 checked={autoUpdate}
-                onChange={() => {this.setState({autoUpdate: !autoUpdate})}}
+                onChange={() => { this.onChange({ autoUpdate: !autoUpdate }) }}
               >Auto Update</ToggleButton>
             </ButtonGroup>
           </Form.Group>
@@ -262,25 +291,31 @@ class AbsolutePicker extends Component {
   }
 
   handleDayClick(day) {
-    this.setState({
-      date: day,
+    console.log("handleDayClick");
+    console.log(day);
+    const hours = this.props.timestamp.getHours();
+    const minutes = this.props.timestamp.getMinutes();
+    this.props.onChange({
+      timestamp: set(day, {"hours": hours, "minutes": minutes}),
     });
   }
 
   setTime(e) {
-    this.setState({
-      time: e.target.value,
+    console.log("setTime");
+    const timestamp = parse(e.target.value, "HH:mm", this.props.timestamp);
+    console.log(timestamp);
+    this.props.onChange({
+      timestamp: parse(e.target.value, "HH:mm", this.props.timestamp),
     });
   }
 
   apply() {
-    const { date, time } = this.state;
-    const timestamp = parse(time, "HH:mm", date);
-    this.props.onApply(timestamp);
+    this.props.onApply(this.props.timestamp);
   }
 
   render() {
-    const { date, time } = this.state;
+    const time = format(this.props.timestamp, "HH:mm");
+    const date = this.props.timestamp;
     const selection = [date, date];
     return (
       <>
@@ -333,6 +368,24 @@ function unpackDuration(duration) {
     units: units,
     value: value,
   };
+}
+
+function differenceInUnits(lhs, rhs, units) {
+  var value = null;
+  if (units === "minutes") {
+    value = differenceInMinutes(lhs, rhs);
+  } else if (units === "hours") {
+    value = differenceInHours(lhs, rhs);
+  } else if (units === "days") {
+    value = differenceInDays(lhs, rhs);
+  } else if (units === "weeks") {
+    value = differenceInWeeks(lhs, rhs);
+  } else {
+    throw new Error("Invalid units");
+  }
+  var duration = {};
+  duration[units] = value;
+  return duration;
 }
 
 function makeNewDurationWithUnits(duration, newUnits) {

@@ -62,15 +62,20 @@ def translate_item(item):
 
 def create_item(data):
     timestamp = data['timestamp']
+    timezone = data['timezone']
+    tzinfo = dateutil.tz.gettz(timezone)
     item = {
         'date': {'S': str(timestamp.date())},
         'timestamp': {'N': str(timestamp.timestamp())},
+        'local_date': {'S': str(timestamp.astimezone(tzinfo).date())},
         'hour': {'N': str(timestamp.hour)},
         'minute': {'N': str(timestamp.minute)},
+        'timezone': {'S': timezone},
     }
 
     numeric_fields = list(data.keys())
     numeric_fields.remove('timestamp')
+    numeric_fields.remove('timezone')
 
     for field in numeric_fields:
         value = data[field]

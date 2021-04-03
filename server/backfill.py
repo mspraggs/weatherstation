@@ -44,6 +44,7 @@ def parse_line_to_reading(line):
     reading['timestamp'] = datetime.fromtimestamp(
         reading['timestamp'], dateutil.tz.UTC,
     )
+    reading['timezone'] = config.TIMEZONE
     return reading
 
 

@@ -16,6 +16,7 @@ import utils
 
 
 TABLE_NAME = 'weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN'
+# TABLE_NAME = 'weatherstation-prod-WeatherDataTable-1D0BRV6F7DK5C'
 
 
 if __name__ == '__main__':
@@ -44,6 +45,7 @@ if __name__ == '__main__':
             'temperature': temperature,
             'air_pressure': air_pressure,
             'relative_humidity': relative_humidity,
+            'timezone': config.TIMEZONE,
             'altitude': config.ALTITUDE,
         }
     )

@@ -24,8 +24,6 @@ COLUMN_HEADINGS = (
     'air_pressure',
     'altitude',
 )
-TABLE_NAME = 'weatherstation-dev-WeatherDataTable-MOBHMQJ76PGN'
-# TABLE_NAME = 'weatherstation-prod-WeatherDataTable-1D0BRV6F7DK5C'
 FROM_TIMESTAMP = None
 TO_TIMESTAMP = None
 
@@ -44,7 +42,6 @@ def parse_line_to_reading(line):
     reading['timestamp'] = datetime.fromtimestamp(
         reading['timestamp'], dateutil.tz.UTC,
     )
-    reading['timezone'] = config.TIMEZONE
     return reading
 
 
@@ -68,4 +65,4 @@ if __name__ == '__main__':
     for reading in readings:
         print(f'Backfilling reading @ {reading["timestamp"].isoformat()}')
         item = utils.create_item(reading)
-        client.put_item(TableName=TABLE_NAME, Item=item)
+        client.put_item(TableName=config.TABLE_NAME, Item=item)
